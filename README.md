@@ -30,7 +30,7 @@ postgresql://postgres:postgres@localhost:5432/postgres
 передав адрес базы данных в качестве аргумента:
 
 ```bash
-python uploader.py upload --db-uri <database_uri>
+python uploader.py upload <database_uri>
 ```
 
 Пример:
