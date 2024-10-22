@@ -10,6 +10,12 @@
 git clone https://github.com/Inzhenerka/scooters_data_uploader.git
 ```
 
+Затем перейдите в директорию с проектом:
+
+```bash
+cd scooters_data_uploader
+```
+
 ## Установка зависимостей
 
 Требуется **Python 3.11** или новее. Для установки зависимостей выполните команду:
