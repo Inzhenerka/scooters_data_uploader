@@ -1,6 +1,6 @@
 # Scooters Data Uploader
 
-Простой инструмент для загрузки данных о скутерах в базу данных PostgreSQL
+Простой инструмент для загрузки данных о скутерах в базу данных PostgreSQL на основе DuckDB
 
 ## Клонирование репозитория
 
@@ -32,7 +32,7 @@ pip install -r requirements.txt
 postgresql://<user>:<password>@<host>:<port>/<database>
 ```
 
-Пример:
+Пример (стандартный адрес для локального PostgreSQL):
 
 ```
 postgresql://postgres:postgres@localhost:5432/postgres
