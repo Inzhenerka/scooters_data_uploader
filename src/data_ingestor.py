@@ -27,37 +27,32 @@ class DataIngestor:
 
     def load_data_to_database(self, table_name: str):
         s3_path: str = f'{self._s3_data_path}{table_name}.parquet'
-        full_table_name: str = f'{self._schema_name}.{table_name}'
+        full_table_name: str = self._full_database_table_name(table_name)
         print(
             f'  :arrow_right:  Writing [bold]{s3_path}[/bold] data to [bold]{full_table_name}[/bold] table...',
         )
-        # Loading parquet data from S3 to temp DuckDB table
-        self._conn.execute(f"CREATE TABLE parquet_data AS SELECT * FROM read_parquet('{s3_path}');")
-        # Recreating database table
+        # Recreating database table with data
         self._conn.execute(f"""
-            DROP TABLE IF EXISTS {self._database_name}.{full_table_name} CASCADE;
-            CREATE TABLE {self._database_name}.{full_table_name} AS 
-            SELECT * FROM parquet_data WHERE 1=0;
+            DROP TABLE IF EXISTS {full_table_name} CASCADE;
+            CREATE TABLE {full_table_name} AS FROM '{s3_path}';
         """)
-        # Writing data to database table
-        self._conn.execute(f'INSERT INTO {self._database_name}.{full_table_name} SELECT * FROM parquet_data;')
-        # Dropping temp DuckDB table
-        self._conn.execute(f'DROP TABLE parquet_data;')
 
     def create_version_table(self, data_version: str):
         print(f'  :arrow_right:  Updating stored date version to [bold]{data_version}[/bold]...')
+        full_table_name: str = self._full_database_table_name(self._version_table_name)
         self._conn.execute(f"""
-            DROP TABLE IF EXISTS {self._database_name}."{self._schema_name}"."{self._version_table_name}";
-            CREATE TABLE {self._database_name}."{self._schema_name}"."{self._version_table_name}" AS 
+            DROP TABLE IF EXISTS {full_table_name};
+            CREATE TABLE {full_table_name} AS 
             SELECT 
                 '{data_version}' as data_version,
                 now() as updated_at;
         """)
 
     def get_version(self):
+        full_table_name: str = self._full_database_table_name(self._version_table_name)
         query: str = f"""
             SELECT data_version
-            FROM {self._database_name}.{self._schema_name}.{self._version_table_name}
+            FROM {full_table_name}
         """
         return self._conn.execute(query).fetchone()[0]
 
@@ -69,6 +64,9 @@ class DataIngestor:
     def create_schema(self):
         print(f':gear:  Creating schema [bold]{self._schema_name}[/bold] for data...')
         self._conn.execute(f'CREATE SCHEMA IF NOT EXISTS {self._database_name}.{self._schema_name};')
+
+    def _full_database_table_name(self, table_name: str) -> str:
+        return f'"{self._database_name}"."{self._schema_name}"."{table_name}"'
 
     def __del__(self):
         if self._conn:
