@@ -1,10 +1,10 @@
-from typing import Annotated
+from typing import Annotated, List
 import typer
 from rich import print
 from src.data_ingestor import DataIngestor
 
 s3_data_path: str = 's3://inzhenerka-public/scooters_data_generator'
-tables: list[str] = ['trips', 'users', 'events']
+tables: List[str] = ['trips', 'users', 'events']
 default_database_uri: str = 'postgresql://postgres:postgres@localhost:5432/postgres'
 default_schema_name: str = 'scooters_raw'
 
