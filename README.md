@@ -1,6 +1,9 @@
 # Scooters Data Uploader
 
-Простой инструмент для загрузки данных о скутерах в базу данных PostgreSQL на основе DuckDB
+Простой инструмент для загрузки данных о скутерах в базу данных PostgreSQL на основе DuckDB.
+
+Несмотря на то, что телеграм-бот [dbt Data Bot](https://t.me/inzhenerka_dbt_bot) позволяет проще загрузить данные
+в базу данных через интернет, данный проект работает с локальными и приватными базами.
 
 ## Клонирование репозитория
 
@@ -53,6 +56,11 @@ python uploader.py upload <database_uri>
 python uploader.py upload postgresql://postgres:postgres@localhost:5432/postgres
 ```
 
+## Альтернативный способ
+
+Если приложение по какой-то причине не работает, можно воспользоваться штатными средствами PosgtreSQL (psql, pg_restore),
+чтобы создать схему со всеми таблицами из файла [scooters_raw.sql](https://inzhenerka-public.s3.eu-west-1.amazonaws.com/scooters_data_generator/scooters_raw.sql).
+
 ## Проверка свежести данных
 
 Для проверки свежести данных в базе выполните команду `version`, передав адрес базы данных в качестве аргумента:
@@ -76,3 +84,8 @@ python uploader.py --help
 python uploader.py upload --help
 python uploader.py version --help
 ```
+
+## Источник данных
+
+Данные созданы в симуляторе поездок [scooters_data_generator](https://github.com/Inzhenerka/scooters_data_generator).
+Там же можно найти ссылки на опубликованные parquet-файлы с данными, которые использует данное приложение для загрузки в базу.
