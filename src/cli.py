@@ -3,7 +3,7 @@ import typer
 from rich import print
 from src.data_ingestor import DataIngestor
 
-s3_data_path: str = 's3://inzhenerka-public/scooters_data_generator'
+s3_data_path: str = 'https://inzhenerka-public.s3.eu-west-1.amazonaws.com/scooters_data_generator/'
 tables: List[str] = ['trips', 'users', 'events']
 default_database_uri: str = 'postgresql://postgres:postgres@localhost:5432/postgres'
 default_schema_name: str = 'scooters_raw'

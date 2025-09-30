@@ -28,7 +28,7 @@ cd scooters_data_uploader
 Требуется **Python 3.9** или новее. Для установки зависимостей выполните команду:
 
 ```bash
-pip install -r requirements.txt
+uv sync
 ```
 
 ## Подготовка адреса базы данных
@@ -51,13 +51,13 @@ postgresql://postgres:postgres@localhost:5432/postgres
 передав адрес базы данных в качестве аргумента:
 
 ```bash
-python uploader.py upload <database_uri>
+uploader upload <database_uri>
 ```
 
 Пример:
 
 ```bash
-python uploader.py upload postgresql://postgres:postgres@localhost:5432/postgres
+uploader upload postgresql://postgres:postgres@localhost:5432/postgres
 ```
 
 ## Альтернативный способ
@@ -70,13 +70,13 @@ python uploader.py upload postgresql://postgres:postgres@localhost:5432/postgres
 Для проверки свежести данных в базе выполните команду `version`, передав адрес базы данных в качестве аргумента:
 
 ```bash
-python uploader.py version <database_uri>
+uploader version <database_uri>
 ```
 
 Пример:
 
 ```bash
-python uploader.py version postgresql://postgres:postgres@localhost:5432/postgres
+uploader version postgresql://postgres:postgres@localhost:5432/postgres
 ```
 
 ## Помощь
@@ -84,9 +84,9 @@ python uploader.py version postgresql://postgres:postgres@localhost:5432/postgre
 Для получения справки по использованию утилиты выполните команды:
 
 ```bash
-python uploader.py --help
-python uploader.py upload --help
-python uploader.py version --help
+uploader --help
+uploader upload --help
+uploader version --help
 ```
 
 ## Источник данных

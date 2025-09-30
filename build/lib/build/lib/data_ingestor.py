@@ -18,12 +18,6 @@ class DataIngestor:
         self._s3_data_path = s3_data_path.rstrip('/') + '/'
         self._schema_name = schema_name
 
-    @property
-    def _current_conn(self) -> duckdb.DuckDBPyConnection:
-        if not self._conn:
-            raise RuntimeError('Connection is not established')
-        return self._conn
-
     def connect(self, postgresql_uri: str) -> None:
         if self._conn:
             self._conn.close()
@@ -38,7 +32,7 @@ class DataIngestor:
             f'  :arrow_right:  Writing [bold]{s3_path}[/bold] data to [bold]{full_table_name}[/bold] table...',
         )
         # Recreating database table with data
-        self._current_conn.execute(f"""
+        self._conn.execute(f"""
             DROP TABLE IF EXISTS {full_table_name} CASCADE;
             CREATE TABLE {full_table_name} AS FROM '{s3_path}';
         """)
@@ -46,7 +40,7 @@ class DataIngestor:
     def create_version_table(self, data_version: str):
         print(f'  :arrow_right:  Updating stored date version to [bold]{data_version}[/bold]...')
         full_table_name: str = self._full_database_table_name(self._version_table_name)
-        self._current_conn.execute(f"""
+        self._conn.execute(f"""
             DROP TABLE IF EXISTS {full_table_name};
             CREATE TABLE {full_table_name} AS 
             SELECT 
@@ -55,24 +49,21 @@ class DataIngestor:
         """)
 
     def get_version(self):
-        full_table_name = self._full_database_table_name(self._version_table_name)
-        query = f"""
+        full_table_name: str = self._full_database_table_name(self._version_table_name)
+        query: str = f"""
             SELECT data_version
             FROM {full_table_name}
         """
-        return self._current_conn.execute(query).fetchone()[0]
+        return self._conn.execute(query).fetchone()[0]
 
     def get_remote_version(self) -> str:
         print(f':cloud:  Getting the latest version of data from remote file storage...')
         s3_path: str = self._s3_data_path + self._version_file_name
-        results = self._current_conn.execute(f"SELECT content FROM read_text('{s3_path}')").fetchone()
-        if not results:
-            raise RuntimeError(f'Unable to get remote version from {s3_path}')
-        return str(results[0].strip())
+        return self._conn.execute(f"SELECT content FROM read_text('{s3_path}')").fetchone()[0].strip()
 
     def create_schema(self):
         print(f':gear:  Creating schema [bold]{self._schema_name}[/bold] for data...')
-        self._current_conn.execute(f'CREATE SCHEMA IF NOT EXISTS {self._database_name}.{self._schema_name};')
+        self._conn.execute(f'CREATE SCHEMA IF NOT EXISTS {self._database_name}.{self._schema_name};')
 
     def _full_database_table_name(self, table_name: str) -> str:
         return f'"{self._database_name}"."{self._schema_name}"."{table_name}"'

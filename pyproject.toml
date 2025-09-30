@@ -1,0 +1,28 @@
+[project]
+name = "scooters-data-uploader"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "duckdb==1.4.0",
+    "typer==0.19.2",
+    "rich"
+]
+
+[dependency-groups]
+dev = [
+    "mypy==1.17.1",
+]
+[project.scripts]
+uploader = "src.cli:app"
+
+[tool.uv]
+package = true
+
+[tool.setuptools.packages]
+find = { }
+
+[[tool.mypy.overrides]]
+module = ["duckdb.*"]
+follow_untyped_imports = true
