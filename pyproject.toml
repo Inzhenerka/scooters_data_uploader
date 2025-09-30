@@ -1,9 +1,18 @@
 [project]
 name = "scooters-data-uploader"
 version = "0.1.0"
-description = "Add your description here"
+description = "Upload educational sample data to PostgreSQL database"
+authors = [
+    { name = "Inzhenerka.Tech", email = "info@inzhenerka.tech" }
+]
 readme = "README.md"
-requires-python = ">=3.11"
+keywords = ["uploader", "scooters", "data", "duckdb", "postgresql"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+requires-python = ">=3.9"
 dependencies = [
     "duckdb==1.4.0",
     "typer==0.19.2",
@@ -12,8 +21,14 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "mypy==1.17.1",
+    "mypy==1.18.2",
 ]
+
+[project.urls]
+Homepage = "https://github.com/Inzhenerka/scooters_data_uploader"
+Repository = "https://github.com/Inzhenerka/scooters_data_uploader"
+Issues = "https://github.com/Inzhenerka/scooters_data_uploader/issues"
+
 [project.scripts]
 uploader = "src.cli:app"
 
@@ -26,3 +41,10 @@ find = { }
 [[tool.mypy.overrides]]
 module = ["duckdb.*"]
 follow_untyped_imports = true
+
+[tool.semantic_release]
+remove_dist = "false"
+branch = "main"
+version_toml = ["pyproject.toml:project.version"]
+upload_to_release = "true"
+upload_to_pypi = "true"
