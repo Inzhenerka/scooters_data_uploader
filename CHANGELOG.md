@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.2.1 (2025-10-01)
+
+### Bug Fixes
+
+- Drop pydantic settings
+  ([`867e7e5`](https://github.com/Inzhenerka/scooters_data_uploader/commit/867e7e50485ab80a7e1677c7f60df31d2ba99364))
+
+
 ## v1.2.0 (2025-10-01)
 
 ### Bug Fixes
