@@ -17,7 +17,6 @@ dependencies = [
     "duckdb==1.4.0",
     "typer==0.19.2",
     "rich==14.1.0",
-    "pydantic-settings==2.11.0",
 ]
 
 [dependency-groups]
@@ -35,15 +34,6 @@ Changelog = "https://github.com/Inzhenerka/scooters_data_uploader/blob/main/CHAN
 uploader = "src.cli:app"
 "scooters-data-uploader" = "src.cli:app"
 
-[tool.uploader]
-s3_data_path = "https://inzhenerka-public.s3.eu-west-1.amazonaws.com/scooters_data_generator/"
-tables = ["trips", "users", "events"]
-version_table_name = "version"
-version_file_name = "version.txt"
-default_database_uri = "postgresql://postgres:postgres@localhost:5432/postgres"
-default_schema_name = "scooters_raw"
-bot_url = "https://t.me/inzhenerka_dbt_bot"
-raw_data_url = "https://inzhenerka-public.s3.eu-west-1.amazonaws.com/scooters_data_generator/scooters_raw.sql"
 [tool.uv]
 package = true
 
@@ -60,11 +50,3 @@ branch = "main"
 version_toml = ["pyproject.toml:project.version"]
 upload_to_release = "true"
 upload_to_pypi = "true"
-
-[tool.mypy]
-plugins = ["pydantic.mypy"]
-
-[tool.pydantic-mypy]
-init_forbid_extra = true
-init_typed = true
-warn_required_dynamic_aliases = true

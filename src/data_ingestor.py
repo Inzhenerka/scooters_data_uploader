@@ -1,19 +1,19 @@
 from duckdb import DuckDBPyConnection
 from rich import print
-from src.settings import UploaderSettings
+from src.config import UploaderConfig
 
 
 class DataIngestor:
     _local_database_name: str = 'postgresql_db'
-    _settings: UploaderSettings
+    _config: UploaderConfig
     _schema_name: str
 
     def __init__(
             self,
-            settings: UploaderSettings,
+            config: UploaderConfig,
             schema_name: str
     ):
-        self._settings = settings
+        self._config = config
         self._schema_name = schema_name
 
     def attach_database(self, conn: DuckDBPyConnection, postgresql_uri: str) -> None:
@@ -21,7 +21,7 @@ class DataIngestor:
         conn.execute(f"ATTACH '{postgresql_uri}' AS {self._local_database_name} (TYPE POSTGRES);")
 
     def load_data_to_database(self, conn: DuckDBPyConnection, table_name: str):
-        s3_path: str = f'{self._settings.s3_data_path}{table_name}.parquet'
+        s3_path: str = f'{self._config.s3_data_path}{table_name}.parquet'
         full_table_name: str = self._full_database_table_name(table_name)
         print(
             f'  :arrow_right:  Writing [bold]{s3_path}[/bold] data to [bold]{full_table_name}[/bold] table...',
@@ -34,7 +34,7 @@ class DataIngestor:
 
     def create_version_table(self, conn: DuckDBPyConnection, data_version: str):
         print(f'  :arrow_right:  Updating stored date version to [bold]{data_version}[/bold]...')
-        full_table_name: str = self._full_database_table_name(self._settings.version_table_name)
+        full_table_name: str = self._full_database_table_name(self._config.version_table_name)
         conn.execute(f"""
             DROP TABLE IF EXISTS {full_table_name};
             CREATE TABLE {full_table_name} AS 
@@ -44,7 +44,7 @@ class DataIngestor:
         """)
 
     def get_version(self, conn: DuckDBPyConnection):
-        full_table_name = self._full_database_table_name(self._settings.version_table_name)
+        full_table_name = self._full_database_table_name(self._config.version_table_name)
         query = f"""
             SELECT data_version
             FROM {full_table_name}
@@ -56,7 +56,7 @@ class DataIngestor:
 
     def get_remote_version(self, conn: DuckDBPyConnection) -> str:
         print(f':cloud:  Getting the latest version of data from remote file storage...')
-        s3_path: str = self._settings.s3_data_path + self._settings.version_file_name
+        s3_path: str = self._config.s3_data_path + self._config.version_file_name
         result = conn.execute(f"SELECT content FROM read_text('{s3_path}')").fetchone()
         if not result:
             raise RuntimeError(f'Unable to get remote version from {s3_path}')

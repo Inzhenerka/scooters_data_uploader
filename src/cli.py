@@ -2,10 +2,10 @@ from typing import Annotated, List
 import typer
 from rich import print
 import duckdb
-from src.settings import UploaderSettings
+from src.config import UploaderConfig
 from src.data_ingestor import DataIngestor
 
-settings = UploaderSettings()
+config = UploaderConfig()
 
 DatabaseURI = Annotated[str, typer.Argument(
     help='Database URI starting with postgresql://',
@@ -23,11 +23,11 @@ app = typer.Typer(
 
 @app.command()
 def version(
-        database_uri: DatabaseURI = settings.default_database_uri,
-        schema_name: SchemaName = settings.default_schema_name
+        database_uri: DatabaseURI = config.default_database_uri,
+        schema_name: SchemaName = config.default_schema_name
 ):
     """Compare version of data in database with the latest version available remotely."""
-    data_ingestor = DataIngestor(settings=settings, schema_name=schema_name)
+    data_ingestor = DataIngestor(config=config, schema_name=schema_name)
     with duckdb.connect() as conn:
         data_ingestor.attach_database(conn, postgresql_uri=database_uri)
         remote_data_version = data_ingestor.get_remote_version(conn)
@@ -44,16 +44,16 @@ def version(
 
 @app.command()
 def upload(
-        database_uri: DatabaseURI = settings.default_database_uri,
-        schema_name: SchemaName = settings.default_schema_name
+        database_uri: DatabaseURI = config.default_database_uri,
+        schema_name: SchemaName = config.default_schema_name
 ):
     """Upload data to database from remote repository."""
-    data_ingestor = DataIngestor(settings=settings, schema_name=schema_name)
+    data_ingestor = DataIngestor(config=config, schema_name=schema_name)
     with duckdb.connect() as conn:
         data_ingestor.attach_database(conn, postgresql_uri=database_uri)
         data_version: str = data_ingestor.get_remote_version(conn)
         data_ingestor.create_schema(conn)
-        for table_name in settings.tables:
+        for table_name in config.tables:
             data_ingestor.load_data_to_database(conn, table_name=table_name)
         data_ingestor.create_version_table(conn, data_version=data_version)
     printc(
@@ -65,14 +65,14 @@ def upload(
 def bot():
     """Open dbt Data Bot in Telegram."""
     printc("Opening dbt Data Bot in Telegram")
-    typer.launch(settings.bot_url)
+    typer.launch(config.bot_url)
 
 
 @app.command()
 def sql():
     """Download SQL file with raw data."""
     printc("Opening raw SQL data in browser for download")
-    typer.launch(settings.raw_data_url)
+    typer.launch(config.raw_data_url)
 
 
 def printc(msg: str, color: str = 'white'):
