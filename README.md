@@ -1,35 +1,34 @@
 # Scooters Data Uploader
 
-<img src="katalkin-inzhenerka.png" alt="Logo" width="300"/>
+<img src="https://github.com/Inzhenerka/scooters_data_uploader/blob/main/katalkin-inzhenerka.png?raw=true" alt="Logo" width="300"/>
 
 Простой инструмент для загрузки данных о скутерах в базу данных PostgreSQL на основе DuckDB
-в рамках симулятора [Data Warehouse Analytics Engineer на базе dbt для инженеров и аналитиков данных](https://inzhenerka.tech/dbt)
+в рамках
+симулятора [Data Warehouse Analytics Engineer на базе dbt для инженеров и аналитиков данных](https://inzhenerka.tech/dbt)
 от школы ИнженеркаТех.
 
 Несмотря на то, что телеграм-бот [dbt Data Bot](https://t.me/inzhenerka_dbt_bot) позволяет проще загрузить данные
 в базу данных через интернет, данный проект работает с локальными и приватными базами.
 
-## Клонирование репозитория
+## Подготовка
 
-Для получения кода с GitHub выполните команду:
+Проще всего работать с приложением через пакетный менеджер `uv`. Его
+нужно [установить](https://docs.astral.sh/uv/getting-started/installation/).
 
-```bash
-git clone https://github.com/Inzhenerka/scooters_data_uploader.git
-```
-
-Затем перейдите в директорию с проектом:
+Один из вариантов установки:
 
 ```bash
-cd scooters_data_uploader
+pip install uv
 ```
 
-## Установка зависимостей
-
-Требуется **Python 3.9** или новее. Для установки зависимостей выполните команду:
+После установки убедитесь, что `uv` доступен и работает с приложением:
 
 ```bash
-uv sync
+uvx scooters-data-uploader
 ```
+
+Использование `uvx` позволяет избежать клонирования репозитория и установки зависимостей, делая процесс простым и
+чистым.
 
 ## Подготовка адреса базы данных
 
@@ -51,32 +50,41 @@ postgresql://postgres:postgres@localhost:5432/postgres
 передав адрес базы данных в качестве аргумента:
 
 ```bash
-uploader upload <database_uri>
+uvx scooters-data-uploader upload <database_uri>
 ```
 
 Пример:
 
 ```bash
-uploader upload postgresql://postgres:postgres@localhost:5432/postgres
+uvx scooters-data-uploader upload postgresql://postgres:postgres@localhost:5432/postgres
 ```
-
-## Альтернативный способ
-
-Если приложение по какой-то причине не работает, можно воспользоваться штатными средствами PosgtreSQL (psql, pg_restore),
-чтобы создать схему со всеми таблицами из файла [scooters_raw.sql](https://inzhenerka-public.s3.eu-west-1.amazonaws.com/scooters_data_generator/scooters_raw.sql).
 
 ## Проверка свежести данных
 
 Для проверки свежести данных в базе выполните команду `version`, передав адрес базы данных в качестве аргумента:
 
 ```bash
-uploader version <database_uri>
+uvx scooters-data-uploader version <database_uri>
 ```
 
 Пример:
 
 ```bash
-uploader version postgresql://postgres:postgres@localhost:5432/postgres
+uvx scooters-data-uploader version postgresql://postgres:postgres@localhost:5432/postgres
+```
+
+## Другие команды
+
+Открыть Telegram-бота для загрузки данных через интернет:
+
+```bash
+uvx scooters-data-uploader bot
+```
+
+Скачать SQL-файл со всеми данными для загрузки через `psql`:
+
+```bash
+uvx scooters-data-uploader sql
 ```
 
 ## Помощь
@@ -84,15 +92,36 @@ uploader version postgresql://postgres:postgres@localhost:5432/postgres
 Для получения справки по использованию утилиты выполните команды:
 
 ```bash
-uploader --help
-uploader upload --help
-uploader version --help
+uvx scooters-data-uploader --help
+uvx scooters-data-uploader upload --help
+uvx scooters-data-uploader version --help
 ```
+
+## Альтернативные способы получения данных
+
+### Импорт из SQL-файла
+
+Если приложение по какой-то причине не работает, можно воспользоваться штатными средствами PosgtreSQL (psql,
+pg_restore),
+чтобы создать схему со всеми таблицами из
+файла [scooters_raw.sql](https://inzhenerka-public.s3.eu-west-1.amazonaws.com/scooters_data_generator/scooters_raw.sql).
+
+Пример команды для загрузки данных из файла:
+
+```bash
+psql  -U postgres -d postgres < scooters_raw.sql
+```
+
+### Загрузка через бота
+
+Телеграм-бот [dbt Data Bot](https://t.me/inzhenerka_dbt_bot) позволяет загрузить данные в базу данных, доступную через
+интернет.
 
 ## Источник данных
 
 Данные созданы в симуляторе поездок [scooters_data_generator](https://github.com/Inzhenerka/scooters_data_generator).
-Там же можно найти ссылки на опубликованные parquet-файлы с данными, которые использует данное приложение для загрузки в базу.
+Там же можно найти ссылки на опубликованные parquet-файлы с данными, которые использует данное приложение для загрузки в
+базу.
 
 ## Другие ссылки
 

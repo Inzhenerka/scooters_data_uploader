@@ -1,52 +1,41 @@
-import duckdb
+from duckdb import DuckDBPyConnection
 from rich import print
+from src.settings import UploaderSettings
 
 
 class DataIngestor:
-    _s3_data_path: str
+    _local_database_name: str = 'postgresql_db'
+    _settings: UploaderSettings
     _schema_name: str
-    _database_name: str = 'postgresql_db'
-    _version_table_name: str = 'version'
-    _version_file_name: str = 'version.txt'
-    _conn: duckdb.DuckDBPyConnection | None = None
 
     def __init__(
             self,
-            s3_data_path: str,
-            schema_name: str,
+            settings: UploaderSettings,
+            schema_name: str
     ):
-        self._s3_data_path = s3_data_path.rstrip('/') + '/'
+        self._settings = settings
         self._schema_name = schema_name
 
-    @property
-    def _current_conn(self) -> duckdb.DuckDBPyConnection:
-        if not self._conn:
-            raise RuntimeError('Connection is not established')
-        return self._conn
-
-    def connect(self, postgresql_uri: str) -> None:
-        if self._conn:
-            self._conn.close()
-        self._conn = duckdb.connect()
+    def attach_database(self, conn: DuckDBPyConnection, postgresql_uri: str) -> None:
         postgresql_uri = postgresql_uri.replace('postgres://', 'postgresql://')
-        self._conn.execute(f"ATTACH '{postgresql_uri}' AS {self._database_name} (TYPE POSTGRES);")
+        conn.execute(f"ATTACH '{postgresql_uri}' AS {self._local_database_name} (TYPE POSTGRES);")
 
-    def load_data_to_database(self, table_name: str):
-        s3_path: str = f'{self._s3_data_path}{table_name}.parquet'
+    def load_data_to_database(self, conn: DuckDBPyConnection, table_name: str):
+        s3_path: str = f'{self._settings.s3_data_path}{table_name}.parquet'
         full_table_name: str = self._full_database_table_name(table_name)
         print(
             f'  :arrow_right:  Writing [bold]{s3_path}[/bold] data to [bold]{full_table_name}[/bold] table...',
         )
         # Recreating database table with data
-        self._current_conn.execute(f"""
+        conn.execute(f"""
             DROP TABLE IF EXISTS {full_table_name} CASCADE;
             CREATE TABLE {full_table_name} AS FROM '{s3_path}';
         """)
 
-    def create_version_table(self, data_version: str):
+    def create_version_table(self, conn: DuckDBPyConnection, data_version: str):
         print(f'  :arrow_right:  Updating stored date version to [bold]{data_version}[/bold]...')
-        full_table_name: str = self._full_database_table_name(self._version_table_name)
-        self._current_conn.execute(f"""
+        full_table_name: str = self._full_database_table_name(self._settings.version_table_name)
+        conn.execute(f"""
             DROP TABLE IF EXISTS {full_table_name};
             CREATE TABLE {full_table_name} AS 
             SELECT 
@@ -54,29 +43,25 @@ class DataIngestor:
                 now() as updated_at;
         """)
 
-    def get_version(self):
-        full_table_name = self._full_database_table_name(self._version_table_name)
+    def get_version(self, conn: DuckDBPyConnection):
+        full_table_name = self._full_database_table_name(self._settings.version_table_name)
         query = f"""
             SELECT data_version
             FROM {full_table_name}
         """
-        return self._current_conn.execute(query).fetchone()[0]
+        return conn.execute(query).fetchone()[0]
 
-    def get_remote_version(self) -> str:
+    def get_remote_version(self, conn: DuckDBPyConnection) -> str:
         print(f':cloud:  Getting the latest version of data from remote file storage...')
-        s3_path: str = self._s3_data_path + self._version_file_name
-        results = self._current_conn.execute(f"SELECT content FROM read_text('{s3_path}')").fetchone()
+        s3_path: str = self._settings.s3_data_path + self._settings.version_file_name
+        results = conn.execute(f"SELECT content FROM read_text('{s3_path}')").fetchone()
         if not results:
             raise RuntimeError(f'Unable to get remote version from {s3_path}')
         return str(results[0].strip())
 
-    def create_schema(self):
+    def create_schema(self, conn: DuckDBPyConnection) -> None:
         print(f':gear:  Creating schema [bold]{self._schema_name}[/bold] for data...')
-        self._current_conn.execute(f'CREATE SCHEMA IF NOT EXISTS {self._database_name}.{self._schema_name};')
+        conn.execute(f'CREATE SCHEMA IF NOT EXISTS {self._local_database_name}.{self._schema_name};')
 
     def _full_database_table_name(self, table_name: str) -> str:
-        return f'"{self._database_name}"."{self._schema_name}"."{table_name}"'
-
-    def __del__(self):
-        if self._conn:
-            self._conn.close()
+        return f'"{self._local_database_name}"."{self._schema_name}"."{table_name}"'
