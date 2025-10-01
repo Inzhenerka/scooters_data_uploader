@@ -29,6 +29,7 @@ dev = [
 Homepage = "https://github.com/Inzhenerka/scooters_data_uploader"
 Repository = "https://github.com/Inzhenerka/scooters_data_uploader"
 Issues = "https://github.com/Inzhenerka/scooters_data_uploader/issues"
+Changelog = "https://github.com/Inzhenerka/scooters_data_uploader/blob/main/CHANGELOG.md"
 
 [project.scripts]
 uploader = "src.cli:app"

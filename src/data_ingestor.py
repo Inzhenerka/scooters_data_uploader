@@ -49,15 +49,18 @@ class DataIngestor:
             SELECT data_version
             FROM {full_table_name}
         """
-        return conn.execute(query).fetchone()[0]
+        result = conn.execute(query).fetchone()
+        if not result:
+            raise RuntimeError(f'Unable to get version from {full_table_name}')
+        return result[0]
 
     def get_remote_version(self, conn: DuckDBPyConnection) -> str:
         print(f':cloud:  Getting the latest version of data from remote file storage...')
         s3_path: str = self._settings.s3_data_path + self._settings.version_file_name
-        results = conn.execute(f"SELECT content FROM read_text('{s3_path}')").fetchone()
-        if not results:
+        result = conn.execute(f"SELECT content FROM read_text('{s3_path}')").fetchone()
+        if not result:
             raise RuntimeError(f'Unable to get remote version from {s3_path}')
-        return str(results[0].strip())
+        return str(result[0].strip())
 
     def create_schema(self, conn: DuckDBPyConnection) -> None:
         print(f':gear:  Creating schema [bold]{self._schema_name}[/bold] for data...')
