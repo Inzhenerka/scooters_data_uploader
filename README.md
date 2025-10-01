@@ -1,5 +1,7 @@
 # Scooters Data Uploader
 
+[![PyPI - Version](https://img.shields.io/pypi/v/scooters-data-uploader)](https://pypi.org/project/scooters-data-uploader/)
+
 <img src="https://github.com/Inzhenerka/scooters_data_uploader/blob/main/katalkin-inzhenerka.png?raw=true" alt="Logo" width="300"/>
 
 Простой инструмент для загрузки данных о скутерах в базу данных PostgreSQL на основе DuckDB
